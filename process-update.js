@@ -14,31 +14,6 @@ var hmrDocsUrl = 'https://webpack.js.org/concepts/hot-module-replacement/'; // e
 
 var lastHash;
 var failureStatuses = { abort: 1, fail: 1 };
-var applyOptions = {
-  ignoreUnaccepted: true,
-  ignoreDeclined: true,
-  ignoreErrored: true,
-  onUnaccepted: function(data) {
-    console.warn(
-      'Ignored an update to unaccepted module ' + data.chain.join(' -> ')
-    );
-  },
-  onDeclined: function(data) {
-    console.warn(
-      'Ignored an update to declined module ' + data.chain.join(' -> ')
-    );
-  },
-  onErrored: function(data) {
-    console.error(data.error);
-    console.warn(
-      'Ignored an error while updating module ' +
-        data.moduleId +
-        ' (' +
-        data.type +
-        ')'
-    );
-  },
-};
 
 function upToDate(hash) {
   if (hash) lastHash = hash;
@@ -46,6 +21,33 @@ function upToDate(hash) {
 }
 
 module.exports = function(hash, moduleMap, options) {
+  var applyOptions = {
+    ignoreUnaccepted: true,
+    ignoreDeclined: true,
+    ignoreErrored: true,
+    onUnaccepted: function(data) {
+      console.warn(
+        'Ignored an update to unaccepted module ' + data.chain.join(' -> ')
+      );
+      performReload();
+    },
+    onDeclined: function(data) {
+      console.warn(
+        'Ignored an update to declined module ' + data.chain.join(' -> ')
+      );
+    },
+    onErrored: function(data) {
+      console.error(data.error);
+      console.warn(
+        'Ignored an error while updating module ' +
+          data.moduleId +
+          ' (' +
+          data.type +
+          ')'
+      );
+    },
+  };
+
   var reload = options.reload;
   if (!upToDate(hash) && module.hot.status() == 'idle') {
     if (options.log) console.log('[HMR] Checking for updates on the server...');
